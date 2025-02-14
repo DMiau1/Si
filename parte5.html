@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pregunta</title>
+  <style>
+    body {
+      background-color: black;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+
+    h1 {
+      font-size: 50px;
+      margin-bottom: 20px;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 50px;
+      position: relative;
+    }
+
+    button {
+      font-size: 24px;
+      padding: 10px 20px;
+      border: none;
+      cursor: pointer;
+      transition: font-size 0.2s, padding 0.2s;
+      position: relative;
+    }
+
+    .yes {
+      background-color: green;
+      color: white;
+    }
+
+    .no {
+      background-color: red;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <h1>Quieres ser mi novia 👉👈🥺</h1>
+  <div class="buttons">
+    <button class="yes" onclick="goToParte6()">Si</button>
+    <button class="no" onclick="increaseSize()">No</button>
+  </div>
+
+  <script>
+    function increaseSize() {
+      let yesButton = document.querySelector(".yes");
+
+      // Increase "Si" button size every time "No" is clicked
+      let currentSize = parseFloat(window.getComputedStyle(yesButton).fontSize);
+      let currentPadding = parseFloat(window.getComputedStyle(yesButton).padding);
+
+      yesButton.style.fontSize = `${currentSize + 5}px`;
+      yesButton.style.padding = `${currentPadding + 5}px`;
+    }
+
+    function goToParte6() {
+      // Redirect to another script or page, replace with actual redirection logic
+      window.location.href = 'parte6.html';  // You can replace 'parte6.html' with the actual script URL or path
+    }
+  </script>
+</body>
+</html>

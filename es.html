@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Misleading Page</title>
+  <style>
+    body {
+      background-color: black;
+      color: white;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      text-align: center;
+      transition: background-color 0.5s ease;
+    }
+    h1 {
+      margin-top: 0;
+      transition: opacity 1s ease;
+      position: absolute;
+      top: 20px;
+      transition: top 0.5s ease;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 10px;
+      font-size: 16px;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.5s ease, color 0.5s ease, opacity 1s ease, transform 1s ease;
+    }
+    .green {
+      background-color: green;
+      color: white;
+    }
+    .red {
+      background-color: red;
+      color: white;
+    }
+    .gray {
+      background-color: gray;
+      color: white;
+    }
+    .hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    canvas {
+      margin-top: 50px;
+      border: 5px solid white;
+    }
+    #scoreBoard {
+      position: absolute;
+      top: 100px; /* Moved up a little bit */
+      color: white;
+      font-size: 20px;
+    }
+    #message {
+      font-size: 24px;
+      color: white;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1 id="main-text">Hola</h1>
+  <button class="green" onclick="changeText()">Hola</button>
+  <button class="red" onclick="window.location.href='https://www.google.com'">Adiós</button>
+
+  <canvas id="gameCanvas" width="600" height="400" class="hidden"></canvas>
+  <div id="scoreBoard" class="hidden"></div>
+  <div id="message" class="hidden"></div>
+
+  <script>
+    let gameStarted = false;
+    let gameOver = false;
+    let points = 0;
+    let snake;
+    let food;
+    let scoreBoard;
+    let ctx;
+    let snakeSpeed = 150;  // Slower snake speed (was 100)
+    let berrySize = 10; // Reverted to original berry size
+
+    function changeText() {
+      let buttons = document.querySelectorAll("button");
+      buttons.forEach(button => button.classList.add("hidden"));
+      document.getElementById("main-text").style.opacity = 0;
+
+      setTimeout(function() {
+        document.getElementById("main-text").innerText = "¿Cómo estás?";
+        document.getElementById("main-text").style.opacity = 1;
+        buttons.forEach(button => {
+          button.classList.remove("hidden");
+          button.classList.add("sync");
+        });
+      }, 1000);
+
+      let buttonText = ["Bien", "Mal"];
+      buttons[0].innerText = buttonText[0];
+      buttons[0].className = "gray";
+      buttons[1].innerText = buttonText[1];
+      buttons[1].className = "gray";
+      buttons[0].setAttribute("onclick", "setResponse('bien')");
+      buttons[1].setAttribute("onclick", "setResponse('mal')");
+    }
+
+    function setResponse(response) {
+      let mainText = document.getElementById("main-text");
+      let buttons = document.querySelectorAll("button");
+
+      if (response === "bien") {
+        mainText.innerText = "Me alegro que estés bien :D";
+      } else {
+        mainText.innerText = "Ayyy, espero que te sientas mejor pronto";
+      }
+
+      buttons.forEach(button => button.classList.add("hidden"));
+
+      setTimeout(function() {
+        mainText.innerText = "Bueno que te parece si jugamos un juego? Yo sé que tú puedes.";
+        buttons.forEach(button => button.classList.add("hidden"));
+        startGame();
+      }, 5000);  // Reduced to 5 seconds
+    }
+
+    function startGame() {
+      gameStarted = true;
+      gameOver = false;
+      points = 0;
+
+      // Hide buttons and start the game
+      document.querySelectorAll("button").forEach(button => button.classList.add("hidden"));
+      document.getElementById("gameCanvas").classList.remove("hidden");
+      document.getElementById("scoreBoard").classList.remove("hidden");
+      document.getElementById("message").classList.remove("hidden");
+
+      ctx = document.getElementById("gameCanvas").getContext("2d");
+      snake = [{ x: 150, y: 150, direction: 'RIGHT' }];
+      food = createFood();
+      scoreBoard = document.getElementById("scoreBoard");
+
+      window.addEventListener('keydown', changeDirection);
+      document.getElementById('gameCanvas').addEventListener('click', moveSnakeToClick);
+      gameLoop();
+    }
+
+    function gameLoop() {
+      if (gameOver) {
+        return resetGame();
+      }
+
+      setTimeout(function() {
+        ctx.clearRect(0, 0, 600, 400);
+        moveSnake();
+        checkCollision();
+        drawGame();
+        gameLoop();
+      }, snakeSpeed);  // Use snakeSpeed to slow down movement
+    }
+
+    function moveSnake() {
+      let head = { ...snake[0] };
+
+      switch (head.direction) {
+        case 'UP': head.y -= 10; break;
+        case 'DOWN': head.y += 10; break;
+        case 'LEFT': head.x -= 10; break;
+        case 'RIGHT': head.x += 10; break;
+      }
+
+      snake.unshift(head);
+
+      if (head.x === food.x && head.y === food.y) {
+        points += 100;  // Changed to 100 points per berry
+        food = createFood();
+        displayRandomMessage();  // Display a random message after collecting a berry
+        setTimeout(() => { food = createFood(); }, 3000); // Make the berry disappear after 3 seconds
+
+        if (points >= 500) {
+          window.location.href = "parte2.html"; // Redirect to parte2.html
+        }
+      } else {
+        snake.pop();
+      }
+    }
+
+    function drawGame() {
+      snake.forEach((segment, index) => {
+        ctx.fillStyle = index === 0 ? 'blue' : 'lightblue';
+        ctx.fillRect(segment.x, segment.y, 10, 10); // Snake body hitboxes aligned to the visual representation
+      });
+
+      ctx.fillStyle = 'grey';
+      ctx.fillRect(food.x, food.y, berrySize, berrySize);  // Reverted berry size to 10x10
+
+      scoreBoard.innerText = `Puntos: ${points}`;
+    }
+
+    function checkCollision() {
+      let head = snake[0];
+
+      // Wall collision
+      if (head.x < 20 || head.x >= 580 || head.y < 20 || head.y >= 380) {
+        gameOver = true;
+      }
+
+      // Self-collision
+      for (let i = 1; i < snake.length; i++) {
+        if (head.x === snake[i].x && head.y === snake[i].y) {
+          gameOver = true;
+        }
+      }
+    }
+
+    function createFood() {
+      let x = Math.floor(Math.random() * 50) * 10;
+      let y = Math.floor(Math.random() * 30) * 10;
+
+      // Make sure the food doesn't spawn near the borders
+      while (x < 40 || x >= 560 || y < 40 || y >= 360) {
+        x = Math.floor(Math.random() * 50) * 10;
+        y = Math.floor(Math.random() * 30) * 10;
+      }
+
+      return { x, y };
+    }
+
+    function changeDirection(event) {
+      let head = snake[0];
+
+      if (event.key === 'ArrowUp' && head.direction !== 'DOWN') head.direction = 'UP';
+      if (event.key === 'ArrowDown' && head.direction !== 'UP') head.direction = 'DOWN';
+      if (event.key === 'ArrowLeft' && head.direction !== 'RIGHT') head.direction = 'LEFT';
+      if (event.key === 'ArrowRight' && head.direction !== 'LEFT') head.direction = 'RIGHT';
+    }
+
+    function moveSnakeToClick(event) {
+      let canvas = document.getElementById('gameCanvas');
+      let rect = canvas.getBoundingClientRect();
+      let mouseX = event.clientX - rect.left;
+      let mouseY = event.clientY - rect.top;
+
+      // Calculate direction towards the mouse click
+      let dx = mouseX - snake[0].x;
+      let dy = mouseY - snake[0].y;
+      let angle = Math.atan2(dy, dx);
+
+      // Convert angle to direction
+      if (Math.abs(dx) > Math.abs(dy)) {
+        snake[0].direction = dx > 0 ? 'RIGHT' : 'LEFT';
+      } else {
+        snake[0].direction = dy > 0 ? 'DOWN' : 'UP';
+      }
+    }
+
+    function displayRandomMessage() {
+      let messages = [
+        "¡Muy bien! ;D", "Casi lo logras", "Felicidades", 
+        "Muy cerca", "Yo sé que sí se puede", "Muy bien", 
+        "¡Perfecto!", "¡Buena!"
+      ];
+      document.getElementById('message').innerText = messages[Math.floor(Math.random() * messages.length)];
+    }
+
+    function resetGame() {
+      points = 0;
+      document.getElementById("scoreBoard").innerText = `Puntos: ${points}`;
+      setTimeout(() => {
+        document.getElementById('message').innerText = "Tu puedes :DDD";
+        gameStarted = false;
+        gameOver = false;
+        startGame();
+      }, 5000);
+    }
+  </script>
+</body>
+</html>

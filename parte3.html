@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple osu! Style Game</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #1a1a1a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .hit-circle {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background-color: rgb(0, 110, 255);
+            position: absolute;
+            cursor: pointer;
+        }
+        .score, .hp {
+            color: white;
+            font-size: 32px;
+            position: absolute;
+            top: 20px;
+        }
+        .hp {
+            top: 60px;
+        }
+        .start-btn {
+            padding: 10px 20px;
+            margin-top: 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .start-btn:hover {
+            background-color: #45a049;
+        }
+        .game-over {
+            color: white;
+            font-size: 48px;
+            position: absolute;
+            top: 40%;
+            text-align: center;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="score">Score: <span id="score">0</span></div>
+<div class="hp">HP: <span id="hp">100</span></div>
+<button class="start-btn" id="start-btn">Empezar Game</button>
+<div id="game-over" class="game-over">¡Tú puedes!</div>
+
+<audio id="music" preload="auto">
+  <source src="songer.mp3" type="audio/mp3">
+  <source src="songer.ogg" type="audio/ogg">
+  Your browser does not support the audio element.
+</audio>
+
+<audio id="damage-sound" preload="auto">
+  <source src="da.mp3" type="audio/mp3">
+  <source src="da.ogg" type="audio/ogg">
+</audio>
+
+<script>
+    const audio = document.getElementById("music");
+    const damageSound = document.getElementById("damage-sound");
+    const startButton = document.getElementById("start-btn");
+    const scoreElement = document.getElementById("score");
+    const hpElement = document.getElementById("hp");
+    const gameOverElement = document.getElementById("game-over");
+    let score = 0;
+    let hp = 100;
+    let isGameRunning = false;
+    let spawnTime = 0;
+
+    // Notes covering full 106 seconds
+    const notes = [];
+    for (let t = 1; t <= 106; t += Math.random() * 2 + 0.5) { 
+        let count = Math.random() < 0.2 ? 3 : Math.random() < 0.5 ? 2 : 1; 
+        notes.push({ time: t, count: count });
+    }
+
+    function takeDamage(amount) {
+        hp -= amount;
+        hpElement.textContent = hp;
+        damageSound.play(); // Play "da" sound effect when taking damage
+
+        if (hp <= 0) {
+            gameOver(false);
+        }
+    }
+
+    // Create hit circle
+    function createHitCircle(x, y) {
+        const hitCircle = document.createElement("div");
+        hitCircle.classList.add("hit-circle");
+        hitCircle.style.left = `${x}%`;
+        hitCircle.style.top = `${y * 100}%`;
+
+        document.body.appendChild(hitCircle);
+
+        function handleClick() {
+            score += 10;
+            hp = Math.min(100, hp + 10); // Gain 10 HP but not above 100
+            scoreElement.textContent = score;
+            hpElement.textContent = hp;
+            hitCircle.remove();
+        }
+
+        // Click and touch support
+        hitCircle.addEventListener("click", handleClick);
+        hitCircle.addEventListener("touchstart", handleClick);
+
+        // Remove the circle after 1 second and decrease HP if missed
+        setTimeout(() => {
+            if (document.body.contains(hitCircle)) {
+                takeDamage(15); // Apply damage if the circle is missed
+                hitCircle.remove();
+            }
+        }, 1000);
+    }
+
+    // Game over function
+    function gameOver(win) {
+        isGameRunning = false;
+        audio.pause();
+        audio.currentTime = 0; 
+
+        if (win) {
+            window.location.href = "parte4.html"; // Redirect if won
+        } else {
+            gameOverElement.style.display = "block";
+            startButton.style.display = "block"; 
+        }
+    }
+
+    // Check for notes and spawn circles
+    function checkNotes() {
+        const currentTime = audio.currentTime;
+        for (let i = spawnTime; i < notes.length; i++) {
+            if (Math.abs(currentTime - notes[i].time) < 0.5) { 
+                for (let j = 0; j < notes[i].count; j++) {
+                    const x = Math.random() * 70 + 15; 
+                    const y = Math.random() * 0.4 + 0.1;
+                    createHitCircle(x, y);
+                }
+                spawnTime = i + 1; 
+            }
+        }
+    }
+
+    // Start the game
+    function startGame() {
+        score = 0;
+        hp = 100;
+        scoreElement.textContent = score;
+        hpElement.textContent = hp;
+        gameOverElement.style.display = "none";
+        startButton.style.display = "none"; 
+        isGameRunning = true;
+        spawnTime = 0; 
+
+        audio.play();
+        
+        // Game loop
+        const gameLoop = setInterval(() => {
+            if (isGameRunning) {
+                checkNotes();
+            } else {
+                clearInterval(gameLoop);
+            }
+        }, 1000); 
+
+        // Stop the game when the song ends
+        audio.onended = function() {
+            if (hp > 0) {
+                gameOver(true); // Win if HP > 0
+            } else {
+                gameOver(false);
+            }
+        };
+    }
+
+    // Event listener for the start button
+    startButton.addEventListener("click", () => {
+        if (!isGameRunning) {
+            startGame();
+        }
+    });
+
+</script>
+</body>
+</html>

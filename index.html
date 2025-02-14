@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pepe Juan - Menú</title>
+  <style>
+    body {
+      background-color: black;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    h1 {
+      font-size: 60px;
+      animation: rgbColorCycle 1s infinite alternate;
+    }
+
+    @keyframes rgbColorCycle {
+      0% { color: red; }
+      25% { color: yellow; }
+      50% { color: blue; }
+      75% { color: green; }
+      100% { color: purple; }
+    }
+
+    button {
+      font-size: 30px;
+      padding: 10px 20px;
+      border: none;
+      cursor: pointer;
+      background: linear-gradient(45deg, #ff0000, #ff8800, #ffff00);
+      color: black;
+      border-radius: 10px;
+      transition: transform 0.2s, background 0.5s;
+    }
+
+    button:hover {
+      transform: scale(1.1);
+      background: linear-gradient(45deg, #ffff00, #ff8800, #ff0000);
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Pepe Juan</h1>
+  <button onclick="startGame()">Empezar</button>
+
+  <script>
+    let music = new Audio('loop.mp3');  
+    music.loop = true;
+    music.volume = 0.5;
+
+    function startGame() {
+      window.location.href = "es.html";
+    }
+
+    // Play music on user interaction
+    function playMusic() {
+      music.play().catch(error => console.log("Autoplay blocked:", error));
+      document.body.removeEventListener("click", playMusic);
+    }
+
+    document.body.addEventListener("click", playMusic);
+  </script>
+
+</body>
+</html>

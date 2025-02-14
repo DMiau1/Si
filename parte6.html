@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>¡Celebración!</title>
+  <style>
+    body {
+      background-color: black;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+      cursor: pointer;
+    }
+
+    h1 {
+      font-size: 50px;
+      margin-bottom: 20px;
+      animation: bounce 1s infinite alternate, rgbColorCycle 1s infinite alternate;
+    }
+
+    @keyframes bounce {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-10px); }
+    }
+
+    @keyframes rgbColorCycle {
+      0% { color: red; }
+      25% { color: yellow; }
+      50% { color: blue; }
+      75% { color: green; }
+      100% { color: purple; }
+    }
+
+    .celebration {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      opacity: 0.8;
+      animation: fall linear infinite;
+    }
+
+    @keyframes fall {
+      from { transform: translateY(-100vh) rotate(0deg); }
+      to { transform: translateY(100vh) rotate(360deg); }
+    }
+
+    .light-beam {
+      position: absolute;
+      top: 0;
+      width: 15px;
+      height: 100vh;
+      background: linear-gradient(to bottom, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0));
+      opacity: 0.7;
+      animation: beamAnimate 2s infinite alternate;
+    }
+
+    @keyframes beamAnimate {
+      0% { transform: rotate(-5deg); }
+      100% { transform: rotate(5deg); }
+    }
+
+    .left-beam {
+      left: 5%;
+    }
+
+    .right-beam {
+      right: 5%;
+    }
+  </style>
+</head>
+<body>
+
+  <h1 id="celebration-message">Yupi sabia que dirías que si :DDDDD</h1>
+
+  <script>
+    let yeiSound = new Audio('yei.mp3');  
+
+    function startCelebration() {
+      // Start sound loop every 0.3 seconds
+      setInterval(() => yeiSound.play(), 30);
+
+      // Create confetti
+      function createCelebration() {
+        for (let i = 0; i < 200; i++) {
+          let celebration = document.createElement("div");
+          celebration.classList.add("celebration");
+          document.body.appendChild(celebration);
+
+          let size = Math.random() * 10 + 5;
+          celebration.style.width = `${size}px`;
+          celebration.style.height = `${size}px`;
+          celebration.style.backgroundColor = getRandomColor();
+          celebration.style.left = `${Math.random() * 100}vw`;
+          celebration.style.animationDuration = `${Math.random() * 3 + 2}s`;
+
+          setTimeout(() => celebration.remove(), 5000);
+        }
+      }
+
+      function getRandomColor() {
+        const colors = ["red", "yellow", "blue", "green", "purple", "orange"];
+        return colors[Math.floor(Math.random() * colors.length)];
+      }
+
+      createCelebration();
+    }
+
+    // User must click to start
+    document.body.addEventListener("click", startCelebration, { once: true });
+
+    // Light beams
+    const leftBeam = document.createElement('div');
+    leftBeam.classList.add('light-beam', 'left-beam');
+    document.body.appendChild(leftBeam);
+
+    const rightBeam = document.createElement('div');
+    rightBeam.classList.add('light-beam', 'right-beam');
+    document.body.appendChild(rightBeam);
+  </script>
+</body>
+</html>
